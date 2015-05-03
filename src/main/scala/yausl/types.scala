@@ -1,7 +1,9 @@
 package yausl
 
 /**
- * Inspired from Grant Beaty's Scunits
+ * Typelevel representation of booleans.
+ *
+ * Copied from Grant Beaty's Scunits
  */
 trait Bool {
   type branch[B,T <: B, E <: B] <: B // typelevel if-then-else
@@ -10,6 +12,9 @@ trait Bool {
   type and[R <: Bool] <: Bool
   type Xor[R <: Bool] <: Bool
 }
+/**
+ * Implementation of the typelevel true.
+ */
 trait True extends Bool {
   type not = False
   type branch[B,T <: B, E <: B] = T
@@ -17,6 +22,9 @@ trait True extends Bool {
   type and[R <: Bool] = R
   type Xor[R <: Bool] = R#not
 }
+/**
+ * Implementation of the typelevel false.
+ */
 trait False extends Bool {
   type not = True
   type branch[B,T <: B, E <: B] = E
@@ -26,6 +34,10 @@ trait False extends Bool {
 }
 
 /**
+ * Typelevel representation of integers, with several arithmetic operators. These allows to write
+ * things like "p1 + p3" in type parameters, which is imho more readable than an implementation through
+ * implicits
+ *
  * Inspired from Grant Beaty's Scunits
  */
 sealed trait Integer {
@@ -57,6 +69,10 @@ sealed trait Integer {
 
   type eq[N <: Integer] = sub[N]#isZero
 }
+
+/**
+ * Refinement of integers that matches the [0, +infinity[ subset.
+ */
 sealed trait NonNegInt extends Integer {
   type N <: NonNegInt
   type abs = N
@@ -68,6 +84,9 @@ sealed trait NonNegInt extends Integer {
   type subNat[R <: NonNegInt] <: NonNegInt
   type divNat[D <: PosInt] <: NonNegInt
 }
+/**
+ * Refinement of integers that matches the ]-infinity, 0] subset.
+ */
 sealed trait NonPosInt extends Integer {
   type N <: NonPosInt
   type isPos = False
@@ -75,6 +94,10 @@ sealed trait NonPosInt extends Integer {
   type neg <: NonNegInt
   type loop[B,F[_ <: B] <: B, Res <: B] = Res
 }
+
+/**
+ * Refinement of integers that matches the ]-infinity, 0[ U ]0, + infinity[ subset.
+ */
 sealed trait NonZeroInt extends Integer {
   type N <: NonZeroInt
   type isZero = False
@@ -84,6 +107,10 @@ sealed trait NonZeroInt extends Integer {
     type result = sameSign[R]#branch[Integer, aRes, aRes#neg]
   })#result
 }
+
+/**
+ * Refinement of integers that matches the ]-infinity, 0[
+ */
 sealed trait NegInt extends NonPosInt with NonZeroInt {
   type N <: NegInt
   type isNeg = True
@@ -92,6 +119,9 @@ sealed trait NegInt extends NonPosInt with NonZeroInt {
   type succ <: NonPosInt
   type pred <: NegInt
 }
+/**
+ * Refinement of integers that matches the ]0, +infinity[
+ */
 sealed trait PosInt extends NonNegInt with NonZeroInt {
   type N <: PosInt
   type isPos = True
@@ -101,6 +131,10 @@ sealed trait PosInt extends NonNegInt with NonZeroInt {
   type loop[B,F[_ <: B] <: B, Res <: B] = pred#loop[B,F,F[Res]]
 }
 
+/**
+ * Typelevel implementation of positive integers : each of them is either a successor of Zero or
+ * a successor of another positive integer.
+ */
 case class ++[P <: NonNegInt]() extends PosInt {
   type N = ++[P]
   type succ = ++[++[P]]
@@ -115,6 +149,10 @@ case class ++[P <: NonNegInt]() extends PosInt {
   type divNat[D <: PosInt] = lt[D]#branch[NonNegInt, _0, p1#addNat[subNat[D]#divNat[D]]]
 }
 
+/**
+ * Typelevel implementation of negative integers : each of them is either a predecessor of Zero or
+ * a predecessor of another negative integer.
+ */
 case class --[S <: NonPosInt]() extends NegInt {
   type N = --[S]
   type succ = S
@@ -125,6 +163,9 @@ case class --[S <: NonPosInt]() extends NegInt {
   type neg = ++[S#neg]
 }
 
+/**
+ * Typelevel implementation of Zero.
+ */
 class _0 extends NonNegInt with NonPosInt {
   type N = _0
   type isZero = True

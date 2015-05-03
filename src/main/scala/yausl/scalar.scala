@@ -4,19 +4,47 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
-class Scalar[U <: HList, T <: HList] /* protected[yausl] */  (val value: Double) extends AnyVal {
+/**
+ * Yausl uses this value-class to avoid boxing at runtime. It models the fact that a measure
+ * is a value associated with a unit-system (U) and a list of dimensions in this system.
+ * So T is a type-level List of Integers, of the same size as the list of units in the system,
+ *
+ * If U =:= meter :: second :: HNil, a speed value (meter.second-1) is a
+ * Scalar[meter::second::HNil, 1 :: -1 :: HNil]
+ */
+class Scalar[U <: HList, T <: HList] protected[yausl](val value: Double) extends AnyVal {
 
+  /**
+   * Adds two scalars with the same dimensions.
+   */
   def +(s: Scalar[U, T]): Scalar[U, T] = new Scalar(value + s.value)
 
+  /**
+   * Substracts two scalars with the same dimensions.
+   */
   def -(s: Scalar[U, T]): Scalar[U, T] = new Scalar(value + s.value)
 
+  /**
+   * Multiplies two scalars with the same dimensions.
+   */
   def *[T2 <: HList](s: Scalar[U, T2])(implicit product: Product[T, T2]): Scalar[U, product.result] =
     new Scalar[U, product.result](value * s.value)
 
+  /**
+   * Divides two scalars with the same dimensions.
+   */
   def /[T2 <: HList](s: Scalar[U, T2])(implicit division: Division[T, T2]): Scalar[U, division.result] =
     new Scalar[U, division.result](value / s.value)
+
+  /**
+   * A "toString" method that relies on an instance generated at compile time.
+   */
+  def show(implicit s : Show[Scalar[U, T]]) = value + "  " + s()
 }
 
+/**
+ * Typeclass that allows to find the dimensions resulting from the multiplication of two values.
+ */
 @implicitNotFound("Could not derive a multiplication from the provided values. " +
   "Are you trying to multiply values from different unit systems ?")
 trait Product[T1 <: HList, T2 <: HList] {
@@ -36,6 +64,9 @@ object Product {
     }
 }
 
+/**
+ * Typeclass that allows to find the dimensions resulting from the division of two values.
+ */
 @implicitNotFound("Could not derive a division from the provided values. " +
   "Are you trying to divide values from different unit systems ?")
 trait Division[T1 <: HList, T2 <: HList] {
@@ -54,12 +85,21 @@ object Division {
     }
 }
 
+/**
+ * A quantity can represent something like quality, substance, change. It could be Length, Time, Mass ...
+ */
 trait BaseQuantity
+
+/**
+ * A unit of measurement is a definite magnitude of a physical quantity. In our case, of base quantity.
+ */
 trait UnitM[M <: BaseQuantity]
 
 
 /**
- * Typeclass used by a system to give dimensions to a measure.
+ * Typeclass used by a system to give dimensions to a measure in a system of units.
+ * For instance, if a System is meter::second::HNil, the dimensions of a time value in this system would be :
+ * 0::1::HNil
  */
 trait DimensionsOf[Units <: HList, U <: UnitM[_]] {
   type result <: HList
@@ -82,27 +122,3 @@ object DimensionsOf {
     type result = _0 :: r.result
   }
 }
-
-
-trait Show[T] {
-  def apply() : String
-}
-
-object Show {
-  implicit def show0[I <: Integer](implicit ev : ToInt[I]) = new Show[I]{def apply() = ev().toString}
-  def show[A](a : A)(implicit ev : Show[A]) = ev()
-}
-
-
-trait ToInt[I <: Integer]{
-  def apply() : Int
-}
-
-object ToInt {
-  implicit val toInt0 = new ToInt[_0]{ def apply() = 0}
-  implicit def toIntPos[N <: NonNegInt](implicit toInt: ToInt[N]) : ToInt[++[N]]
-    = new ToInt[++[N]]{ def apply() = toInt() + 1}
-  implicit def toIntNeg[N <: NonPosInt](implicit toInt: ToInt[N]) : ToInt[--[N]]
-    = new ToInt[--[N]]{ def apply() = toInt() - 1}
-}
-

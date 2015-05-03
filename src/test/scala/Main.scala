@@ -18,8 +18,10 @@ object Main {
     val f = 5.metre / 5.second // computes a speed (length / time) at compile time
     val h = 5.metre * 5.metre // computes a surface (metre * metre) at compile time
 
+    val i = (32 metre) / (16 second)
+    println(i.show)
 
-    println(h.value)
+
 
 
   }

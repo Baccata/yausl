@@ -22,6 +22,6 @@ scalacOptions ++= Seq(
   "-language:existentials",
   "-language:postfixOps",
   "-language:experimental.macros",
-  "-language:reflectiveCalls",
+  //"-language:reflectiveCalls",
   "-deprecation"
 )
