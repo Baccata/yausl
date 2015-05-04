@@ -1,1 +1,112 @@
 
+# Yausl : Yet Another Unit System Library
+
+The goal of this library is to provide a way to generically create **Systems of Units** such as the 
+[International System of Units](http://en.wikipedia.org/wiki/International_System_of_Units), with as little
+boilerplate as possible. The types originating from these systems are checked at compile time when
+performing operations such as additions and multiplications, and the values of these types should have 
+performances similar to unboxed doubles, thanks to [value classes](http://docs.scala-lang.org/overviews/core/value-classes.html). 
+
+**THIS LIBRARY IS EXPERIMENTAL, USE IT AT YOUR OWN RISKS**
+
+This library was vastly inspired from Grant Beaty's [Scunits](https://github.com/gbeaty/scunits), from which I 
+got some class names and the implementation for typelevel integers based on type-projections. What differs from
+it is mainly the fact that I wanted to write things such as *1.metre / 1 second* without having to manually 
+write these extension methods, and the fact that I didn't care so much about (not) using implicits 
+for type-level computations. 
+
+## Example code 
+
+This library use Shapeless' implementation of HLists but does not rely on any HList at runtime. 
+
+```scala 
+import yausl._ 
+import shapeless._
+
+trait Length extends Quantity //defining a quantity
+trait Time extends Quantity
+trait metre extends UnitM[Length] //defining a unit for this quantity
+trait second extends UnitM[Time]
+
+val system = SystemGenerator.fromHList[metre :: second :: HNil] //generating a system of units
+import system._
+
+import system._ // importing extension methods generated during the system creation. 
+
+val a = 5 metre // compiles, creates an instance of Scalar[metre :: second :: HNil, p1 :: _0 :: HNil]
+val b = 3 second // compiles, creates an instance of Scalar[metre :: second :: HNil, _0 :: p1 :: HNil]
+val c = (5 metre) / (3 second) // compiles, creates an instance of 
+                               //Scalar[metre :: second :: HNil, p1 :: n1 :: HNil]  
+val d = (8 metre) + (2 metre) // compiles
+// val e = c + d // does not compile as you cannot sum m et m.s^-1
+
+println(a.show) //prints "8.0 metre.second^-1" 
+```
+
+
+## Requirements 
+
+When this library was imagined, a certain number of requirements were conceptualized. As the code evolves, 
+I will keep a formal list of requirements and provide a test for each of them. However, some tests 
+are hard to be written, as performing them means checking whether a piece of code compiles. 
+
+The usability requirements are the following : 
+
+Requirements ID   | Description
+------------------| ----------------------------------------------------------------
+REQ_YAUSL_USE_001 | systems of units should be creatable from a list of types (HList)                        
+REQ_YAUSL_USE_002 | "natural constructors" must be generated to allow a very natural writing style 
+REQ_YAUSL_USE_003 | summing/substracting values of different dimensions must not compile                
+REQ_YAUSL_USE_004 | summing/substracting values of equal dimensions must compile and work               
+REQ_YAUSL_USE_005 | multiplication should be commutative(type-wise and value-wise)
+REQ_YAUSL_USE_006 | values should be printable with their types (for debugging purposes)
+
+The performance requirements are the following : 
+
+Requirements ID    | Description
+-------------------|-----------------------------------------------------------------
+REQ_YAUSL_PERF_001 | performances of yausl Scalar instances should be similar to the ones of unboxed doubles  
+              
+## Implementation
+
+The implementation relies on implicit-expansion based typelevel programming 
+Basically, what happens is that a value (yausl.Scalar) is accompanied at compile 
+time with a typelevel list of Units (yausl.UnitM) and a typelevel list of integers that represents, for 
+each unit, a associated dimension. Therefore, a Scalar[metre::second::HNil, 1 :: -1 :: HNil] is a speed. 
+
+I really wanted the system to be as generic as possible and did not make assumption on how this should be used, 
+so you can have values that are m^-3, which does not physically represent anything ... 
+
+The automatic creation of "natural constructors" (when writing "1 meter" for instance) is performed using a 
+type generator macro that uses vampire methods. Calling the macro 
+
+    SystemGenerator.fromHList[metre::second::HNil]
+    
+creates a System instance with an embedded implicit extension that adds the methods "metre" and "second" to the 
+Double primitive type, each of them instantiating a Scalar of their respective type representation within the
+system. 
+
+## Limitations / TODOs 
+
+There is a number of things you would probably like to do with which have not yet been implemented : 
+
+- Initializing values with composite types : you cannot currently write "1 metre / second", you have 
+to write "(1 metre) / (1 second)" or "1.metre / 1.second". 
+- Values (yausl.Scalar) from different system cannot be summed. 
+- Values are instances of the yausl.Scalar value class, and as such cannot be used inside a usual Collection, 
+I will provide a custom implementation of Array at some point. 
+- Multiplying/dividing/showing values requires some typelevel computation that will increase your 
+compile time. But the runtime peformance loss is less than 10% when compared to doubles. 
+- If you want your units to have symbols, you should create your own instance of yausl.Show. 
+
+## Finally 
+
+On a personal note, I'm currently looking for a job and am ready to move anywhere. 
+If you are in need of a young Scala developer who's ready to fight boilerplate through 
+typelevel programming or macros, please contact me. 
+
+
+
+      
+                
+                  
