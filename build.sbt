@@ -1,6 +1,6 @@
 name := "yausl"
 
-version := "0.0.1"
+version := "0.0.1-SNAPSHOT"
 
 scalaVersion := "2.11.6"
 
@@ -29,3 +29,9 @@ scalacOptions ++= Seq(
 )
 
 scalacOptions in Test ++= Seq("-Yrangepos")
+
+import de.heikoseeberger.sbtheader.license.Apache2_0
+
+headers := Map(
+  "scala" -> Apache2_0("2015", "Olivier Mélois")
+)
