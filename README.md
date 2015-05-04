@@ -9,15 +9,14 @@ performances similar to unboxed doubles, thanks to [value classes](http://docs.s
 
 **THIS LIBRARY IS EXPERIMENTAL, USE IT AT YOUR OWN RISKS**
 
-This library was vastly inspired from Grant Beaty's [Scunits](https://github.com/gbeaty/scunits), from which I 
-got some class names and the implementation for typelevel integers based on type-projections. What differs from
-it is mainly the fact that I wanted to write things such as *1.metre / 1 second* without having to manually 
-write these extension methods, and the fact that I didn't care so much about (not) using implicits 
-for type-level computations. 
+This library was partly inspired from Grant Beaty's [Scunits](https://github.com/gbeaty/scunits), from which I 
+got some class names and the implementation for typelevel integers based on type-projections (though I enriched it 
+for my own knowledge). What differs from it is mainly the fact that I wanted to write things such as 
+*1.metre / 1.second* without having to manually write these extension methods, 
+and the fact that I didn't care so much about (not) using implicits for type-level computations. 
 
 ## Example code 
 
-This library use Shapeless' implementation of HLists but does not rely on any HList at runtime. 
 
 ```scala 
 import yausl._ 
@@ -29,8 +28,6 @@ trait metre extends UnitM[Length] //defining a unit for this quantity
 trait second extends UnitM[Time]
 
 val system = SystemGenerator.fromHList[metre :: second :: HNil] //generating a system of units
-import system._
-
 import system._ // importing extension methods generated during the system creation. 
 
 val a = 5 metre // compiles, creates an instance of Scalar[metre :: second :: HNil, p1 :: _0 :: HNil]
@@ -50,7 +47,9 @@ When this library was imagined, a certain number of requirements were conceptual
 I will keep a formal list of requirements and provide a test for each of them. However, some tests 
 are hard to be written, as performing them means checking whether a piece of code compiles. 
 
+
 The usability requirements are the following : 
+
 
 Requirements ID   | Description
 ------------------| ----------------------------------------------------------------
@@ -61,7 +60,9 @@ REQ_YAUSL_USE_004 | summing/substracting values of equal dimensions must compile
 REQ_YAUSL_USE_005 | multiplication should be commutative(type-wise and value-wise)
 REQ_YAUSL_USE_006 | values should be printable with their types (for debugging purposes)
 
+
 The performance requirements are the following : 
+
 
 Requirements ID    | Description
 -------------------|-----------------------------------------------------------------
@@ -69,10 +70,10 @@ REQ_YAUSL_PERF_001 | performances of yausl Scalar instances should be similar to
               
 ## Implementation
 
-The implementation relies on implicit-expansion based typelevel programming 
+The implementation relies on implicit-expansion based type-level programming 
 Basically, what happens is that a value (yausl.Scalar) is accompanied at compile 
-time with a typelevel list of Units (yausl.UnitM) and a typelevel list of integers that represents, for 
-each unit, a associated dimension. Therefore, a Scalar[metre::second::HNil, 1 :: -1 :: HNil] is a speed. 
+time with a type-level list (shapeless.HList) of Units (yausl.UnitM) and a typelevel list of integers that represents, 
+for each unit, a associated dimension. Therefore, a Scalar[metre::second::HNil, 1 :: -1 :: HNil] is a speed value. 
 
 I really wanted the system to be as generic as possible and did not make assumption on how this should be used, 
 so you can have values that are m^-3, which does not physically represent anything ... 
@@ -88,22 +89,25 @@ system.
 
 ## Limitations / TODOs 
 
-There is a number of things you would probably like to do with which have not yet been implemented : 
+There is a number of things you would probably like to do with yausl which have not yet been implemented : 
 
+- Since we use fancy things such as type-level programming and whitebox, macros, your ide will probably show 
+false positives when looking for type errors.
 - Initializing values with composite types : you cannot currently write "1 metre / second", you have 
 to write "(1 metre) / (1 second)" or "1.metre / 1.second". 
-- Values (yausl.Scalar) from different system cannot be summed. 
+- Values (yausl.Scalar) from different systems cannot be summed, even if they represent the same quantities.
+- Speaking of quantities : right now my quantities are absolutely useless. 
 - Values are instances of the yausl.Scalar value class, and as such cannot be used inside a usual Collection, 
-I will provide a custom implementation of Array at some point. 
+I will provide a custom implementation of Array at some point that will deal with this problem.  
 - Multiplying/dividing/showing values requires some typelevel computation that will increase your 
-compile time. But the runtime peformance loss is less than 10% when compared to doubles. 
-- If you want your units to have symbols, you should create your own instance of yausl.Show. 
+compile time. I personally don' mind, the compiler works for me and the end user should see any performance problem.
+- If you want your units to have symbols, you should create your own instance of the yausl.Show typeclass. 
 
 ## Finally 
 
 On a personal note, I'm currently looking for a job and am ready to move anywhere. 
 If you are in need of a young Scala developer who's ready to fight boilerplate through 
-typelevel programming or macros, please contact me. 
+typelevel programming or macros, please ask me for a CV. 
 
 
 
