@@ -25,10 +25,20 @@ import scala.annotation.implicitNotFound
  * is a value associated with a unit-system (U) and a list of dimensions in this system.
  * So T is a type-level List of Integers, of the same size as the list of units in the system,
  *
- * If U =:= meter :: second :: HNil, a speed value (meter.second-1) is a
+ * If U =:= meter :: second :: HNil, a speed value (meter.second^^-1) is a
  * Scalar[meter::second::HNil, 1 :: -1 :: HNil]
  */
 class Scalar[U <: HList, T <: HList] protected[yausl](val value: Double) extends AnyVal {
+
+  /**
+   * Multiplies the scalar with a double
+   */
+  def *(d : Double) : Scalar[U, T] = new Scalar(value * d)
+
+  /**
+   * Divides the scalar with a double
+   */
+  def /(d : Double) : Scalar[U, T] = new Scalar(value / d)
 
   /**
    * Adds two scalars with the same dimensions.
@@ -55,7 +65,7 @@ class Scalar[U <: HList, T <: HList] protected[yausl](val value: Double) extends
   /**
    * A "toString" method that relies on an instance generated at compile time.
    */
-  def show(implicit s : Show[Scalar[U, T]]) = value + "  " + s()
+  def show(implicit s : Show[Scalar[U, T]]) = value + " " + s()
 }
 
 /**
@@ -138,3 +148,19 @@ object DimensionsOf {
     type result = _0 :: r.result
   }
 }
+
+/**
+ * Typeclass that computes a list of Zeros from a unit list.
+ */
+trait Zeros[D <: HList]{
+  type result <: HList
+}
+
+object Zeros {
+  type Aux[D <: HList, Out <:HList] = Zeros[D]{type result = Out}
+
+  implicit val inv0 : Aux[HNil, HNil] = new Zeros[HNil] {type result = HNil}
+  implicit def inv1[H <: UnitM[_], T <: HList, R <: HList](implicit zeros : Zeros.Aux[T, R]) : Aux[H :: T, _0 :: R]
+    = new Zeros[H :: T]{type result = _0 :: R}
+}
+

@@ -122,6 +122,16 @@ trait System[Units <: HList] {
   def measure[T <: UnitM[_]](value: Double)(implicit dimOf: DimensionsOf[Units, T])
     : Scalar[Units, dimOf.result] = new Scalar[Units, dimOf.result](value)
 
+  /**
+   * This conversion allows to use a double in prefix position of a Scalar operator, by converting it to a
+   * dimensionless Scalar.
+   */
+  implicit class toScalarExtension(value : Double) {
+    def scalar(implicit zeros : Zeros[Units]) : Scalar[Units, zeros.result]
+    = new Scalar[Units, zeros.result](value)
+  }
+
+
 }
 
 /**

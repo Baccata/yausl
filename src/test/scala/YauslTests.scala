@@ -38,6 +38,9 @@ class YauslUsabilitySpec extends Specification {
       REQ_YAUSL_USE_003 : summing values of different dimensions should not compile                $e3
       REQ_YAUSL_USE_004 : summing values of equal dimensions should compile and work               $e4
       REQ_YAUSL_USE_005 : multiplication should be commutative(type-wise and value-wise)           $e5
+      REQ_YAUSL_USE_006 : values should be printable with their types                              $e6
+      REQ_YAUSL_USE_007 : Scalar multiplicative operators should work with doubles                 $e7
+      REQ_YAUSL_USE_008 : doubles should be usable in prefix position of scalar operators          $e8
   """
 
   val system = SystemGenerator.fromHList[metre :: second :: HNil]
@@ -67,6 +70,20 @@ class YauslUsabilitySpec extends Specification {
     a.value must be equalTo(15)
   } and {
     b.value must be equalTo(15)
+  }
+
+  def e6 = {
+    ((1 metre) / (1 second)).show must be equalTo "1.0 metre.second^-1"
+  }
+
+  def e7 = {
+    ((1 metre) * 2) must be equalTo (2.scalar * (1 metre))
+  } and {
+    ((3 metre) / 2) must be equalTo (1.5 metre)
+  }
+
+  def e8 = {
+    ((1 second) / (1 metre)) must be equalTo (1.scalar / ((1 metre) / (1 second)))
   }
 }
 

@@ -37,6 +37,8 @@ val c = (5 metre) / (3 second) // compiles, creates an instance of
 val d = (8 metre) + (2 metre) // compiles
 // val e = c + d // does not compile as you cannot sum m et m.s^-1
 
+val f = measure[metre](3) // scalars can also be initialized like this.  
+
 println(a.show) //prints "8.0 metre.second^-1" 
 ```
 
@@ -59,6 +61,8 @@ REQ_YAUSL_USE_003 | summing/substracting values of different dimensions must not
 REQ_YAUSL_USE_004 | summing/substracting values of equal dimensions must compile and work               
 REQ_YAUSL_USE_005 | multiplication should be commutative(type-wise and value-wise)
 REQ_YAUSL_USE_006 | values should be printable with their types (for debugging purposes)
+REQ_YAUSL_USE_007 | Scalar multiplicative operators should work with doubles                 
+REQ_YAUSL_USE_008 | doubles should be usable in prefix position of scalar operators, through conversion to Scalar          
 
 
 The performance requirements are the following : 
@@ -106,8 +110,8 @@ compile time. I personally don' mind, the compiler works for me and the end user
 ## Finally 
 
 On a personal note, I'm currently looking for a job and am ready to move anywhere. 
-If you are in need of a young Scala developer who's ready to fight boilerplate through 
-typelevel programming or macros, please ask me for a CV. 
+If you are in need of a young, eager to learn, Scala developer who's ready to fight boilerplate through 
+type-level programming or macros, please ask me for a CV. 
 
 
 
