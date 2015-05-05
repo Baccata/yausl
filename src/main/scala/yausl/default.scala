@@ -16,8 +16,6 @@
 
 package yausl
 
-import shapeless.{HNil, ::}
-
 object default {
   trait Time extends BaseQuantity
   trait Length extends BaseQuantity
@@ -29,4 +27,9 @@ object default {
 
   trait metre extends UnitM[Length]
   trait second extends UnitM[Time]
+  trait kilogram extends  UnitM[Mass]
+  trait kelvin extends  UnitM[Temperature]
+  trait mole extends  UnitM[AmountOfSubstance]
+  trait ampere extends  UnitM[Current]
+  trait candela extends  UnitM[Intensity]
 }
