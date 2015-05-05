@@ -1,8 +1,10 @@
 name := "yausl"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.2-SNAPSHOT"
 
 scalaVersion := "2.11.6"
+
+organization := "com.github.baccata"
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),

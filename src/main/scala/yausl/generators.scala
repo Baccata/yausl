@@ -35,9 +35,7 @@ object SystemGenerator {
    *
    *  This trick is called "vampire methods".
     */
-  def method_impl[Units <: HList, U <: UnitM[_], Dims <: HList](c: Context)
-                                                   (dimOf : c.Expr[DimensionsOf.Aux[Units, U, Dims]])
-  : c.Expr[yausl.Scalar[Units, Dims]] = {
+  def method_impl[Units <: HList, Dims <: HList](c: Context) : c.Expr[yausl.Scalar[Units, Dims]] = {
     import c.universe._
     import org.scalamacros.resetallattrs._
 
@@ -52,11 +50,11 @@ object SystemGenerator {
       }
     }
 
-    val (arg, body) = c.macroApplication.symbol.annotations.find(
+    val body = c.macroApplication.symbol.annotations.find(
       _.tree.tpe <:< typeOf[body]
     ).flatMap { x =>
       x.tree.children.tail.collectFirst {
-        case Function(ValDef(_, arg, _, _) :: Nil, body) => arg -> c.resetAllAttrs(body)
+        case body : Tree => c.resetAllAttrs(body)
       }
     }.getOrElse(c.abort(c.enclosingPosition, "Annotation body not provided!"))
 
@@ -64,7 +62,6 @@ object SystemGenerator {
       q"""
         val $prefixVal = ${c.prefix}
         val $prefixVal2 = ${c.prefix}
-        val $arg = $dimOf
         ${replaceThises.transform(body)}
         """
     )
@@ -82,6 +79,11 @@ object SystemGenerator {
     def fromHListImpl[Units <: HList : c.WeakTypeTag](ev: c.Expr[LUBConstraint[Units, UnitM[_]]]) = {
       import c.universe._
       val tpe = c.weakTypeOf[Units]
+      val integer_1 = c.weakTypeOf[p1]
+      val integer_0 = c.weakTypeOf[_0]
+      val units = hlistElements(tpe)
+
+      def dimsOf(t : Type) = mkHListTpe(units map {u => if (u == t) integer_1 else integer_0})
 
       val className = TypeName(c.freshName("System"))
       val extensionName = TypeName(c.freshName("unitExtension"))
@@ -92,12 +94,13 @@ object SystemGenerator {
           class $className extends yausl.System[$tpe] {
 
             implicit class $extensionName(val value : Double){
-              ..${ hlistElements(tpe).map { t =>
+              ..${ units.map { t =>
                     val name = t.typeSymbol.name.toString
+                    val dims = dimsOf(t)
                     q"""
-                      @yausl.body((dimOf : yausl.DimensionsOf[$tpe,$t]) => yausl.System.measure[$tpe, $t](value)(dimOf))
-                      def ${TermName(name)}[T <: shapeless.HList](implicit dimOf : yausl.DimensionsOf.Aux[$tpe, $t, T]) :
-                      yausl.Scalar[$tpe, T] = macro SystemGenerator.method_impl[$tpe, $t, T]
+                      @yausl.body(new yausl.Scalar[$tpe, $dims](value))
+                      def ${TermName(name)} : yausl.Scalar[$tpe, $dims]
+                        = macro SystemGenerator.method_impl[$tpe, $dims]
                     """
                   }
               }
