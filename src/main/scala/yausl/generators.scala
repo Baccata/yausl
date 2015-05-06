@@ -17,10 +17,12 @@
 package yausl
 
 import shapeless.HList.ListCompat._
+import shapeless.LUBConstraint.<<:
 import shapeless.{CaseClassMacros, LUBConstraint, HList}
 
 import scala.annotation.StaticAnnotation
 import scala.language.experimental.macros
+import scala.reflect.macros.whitebox
 import scala.reflect.macros.whitebox.Context
 
 object SystemGenerator {
@@ -35,7 +37,7 @@ object SystemGenerator {
    *
    *  This trick is called "vampire methods".
     */
-  def method_impl[Units <: HList, Dims <: HList](c: Context) : c.Expr[yausl.Scalar[Units, Dims]] = {
+  def method_impl[Units <: HList, Dims <: HList](c: whitebox.Context) : c.Expr[yausl.Scalar[Units, Dims]] = {
     import c.universe._
     import org.scalamacros.resetallattrs._
 
@@ -70,7 +72,7 @@ object SystemGenerator {
   def fromHList[Units <: HList](implicit ev: LUBConstraint[Units, UnitM[_]]): System[Units] =
   macro SystemMacros.fromHListImpl[Units]
 
-  class SystemMacros(val c: Context) extends CaseClassMacros {
+  class SystemMacros(val c: whitebox.Context) extends CaseClassMacros {
 
     /**
      * This macro definition generates a type that is not vampired. Therefore, its use will
@@ -98,7 +100,7 @@ object SystemGenerator {
                     val name = t.typeSymbol.name.toString
                     val dims = dimsOf(t)
                     q"""
-                      @yausl.body(new yausl.Scalar[$tpe, $dims](value))
+                      @yausl.body(yausl.System.scalar[$tpe, $dims](value))
                       def ${TermName(name)} : yausl.Scalar[$tpe, $dims]
                         = macro SystemGenerator.method_impl[$tpe, $dims]
                     """
@@ -145,4 +147,10 @@ trait System[Units <: HList] {
 object System {
   def measure[Units <: HList, T <: UnitM[_]](value: Double)(implicit dimOf: DimensionsOf[Units, T])
     : Scalar[Units, dimOf.result] = new Scalar[Units, dimOf.result](value)
+
+  def scalar[Units <: HList, Dims <: HList](value : Double)
+                                           (implicit lub1 : LUBConstraint[Units, UnitM[_]],
+                                            lub2 : LUBConstraint[Dims, Integer],
+                                            sameSize : SameSize[Units, Dims])
+    : Scalar[Units, Dims] = new Scalar[Units, Dims](value)
 }

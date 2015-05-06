@@ -164,3 +164,14 @@ object Zeros {
     = new Zeros[H :: T]{type result = _0 :: R}
 }
 
+/**
+ * Typeclass that computes a list of Zeros from a unit list.
+ */
+trait SameSize[A <: HList, B <: HList]
+
+object SameSize {
+  implicit val ss0 : SameSize[HNil, HNil] = new SameSize[HNil, HNil]{}
+  implicit def ss1[A1, A <: HList, B1, B <: HList](implicit ss : SameSize[A,B])
+  : SameSize[A1::A, B1::B] = new SameSize[A1::A, B1::B]{}
+}
+
