@@ -15,6 +15,17 @@ for my own knowledge). What differs from it is mainly the fact that I wanted to 
 *1.metre / 1.second* without having to manually write these extension methods, 
 and the fact that I didn't care so much about (not) using implicits for type-level computations. 
 
+## Usage 
+
+Yausl is built using SBT and published on the oss sonatype repositories. To use it, 
+The following dependencies should be added to your build (see the double %% that differentiates 
+maven-built artifacts from SBT-built artifacts).
+
+    resolvers += Resolver.sonatypeRepo("snapshots")
+    
+    libraryDependencies += "com.github.baccata" %% "yausl" % "0.1.0-SNAPSHOT"
+
+
 ## Example code 
 
 
@@ -30,6 +41,9 @@ trait second extends UnitM[Time]
 val system = SystemGenerator.fromHList[metre :: second :: HNil] //generating a system of units
 import system._ // importing extension methods generated during the system creation. 
 
+// The pX type is the "type-level positive integer of value X" and 
+// nX is the "type-level" negative integer of value -X"
+
 val a = 5 metre // compiles, creates an instance of Scalar[metre :: second :: HNil, p1 :: _0 :: HNil]
 val b = 3 second // compiles, creates an instance of Scalar[metre :: second :: HNil, _0 :: p1 :: HNil]
 val c = (5 metre) / (3 second) // compiles, creates an instance of 
@@ -38,6 +52,8 @@ val d = (8 metre) + (2 metre) // compiles
 // val e = c + d // does not compile as you cannot sum m et m.s^-1
 
 val f = measure[metre](3) // scalars can also be initialized like this.  
+
+val g = 1.scalar // 4.second // compiles, creates an instance of s^-1 Scalar
 
 println(a.show) //prints "8.0 metre.second^-1" 
 ```
@@ -107,14 +123,16 @@ I will provide a custom implementation of Array at some point that will deal wit
 compile time. I personally don' mind, the compiler works for me and the end user should see any performance problem.
 - If you want your units to have symbols, you should create your own instance of the yausl.Show typeclass. 
 
+## Thank you note 
+
+I'd like to thank Miles Sabin and the guys behind the [Shapeless](https://github.com/milessabin/shapeless)
+library (although yausl doesn't use a lot of Shapeless, their CaseClassMacros trait was very useful) 
+and the team that works to make macros writable/readable by humans, 
+especially Eugene Burmako and Travis Brown for their [type providers examples](https://github.com/travisbrown/type-provider-examples)
+
 ## Finally 
 
 On a personal note, I'm currently looking for a job and am ready to move anywhere. 
 If you are in need of a young, eager to learn, Scala developer who's ready to fight boilerplate through 
-type-level programming or macros, please ask me for a CV. 
+type-level programming and macros, please ask me for a CV. 
 
-
-
-      
-                
-                  

@@ -13,7 +13,7 @@ lazy val yausl = project.in(file("."))
   .settings(headers := Map("scala" -> Apache2_0("2015", "Olivier Mélois")))
 
 lazy val buildSettings = Seq(
-  version := "0.0.2-SNAPSHOT",
+  version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.11.6",
   organization := "com.github.baccata",
   crossScalaVersions := Seq("2.10.5", "2.11.6"),
