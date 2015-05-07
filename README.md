@@ -53,7 +53,7 @@ val d = (8 metre) + (2 metre) // compiles
 
 val f = measure[metre](3) // scalars can also be initialized like this.  
 
-val g = 1.scalar // 4.second // compiles, creates an instance of s^-1 Scalar
+val g = 1.scalar / 4.second // compiles, creates an instance of s^-1 Scalar
 
 println(a.show) //prints "8.0 metre.second^-1" 
 ```
