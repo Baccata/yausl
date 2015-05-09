@@ -7,7 +7,7 @@ boilerplate as possible. The types originating from these systems are checked at
 performing operations such as additions and multiplications, and the values of these types should have 
 performances similar to unboxed doubles, thanks to [value classes](http://docs.scala-lang.org/overviews/core/value-classes.html). 
 
-**THIS LIBRARY IS EXPERIMENTAL, USE IT AT YOUR OWN RISKS**
+**THIS LIBRARY IS EXPERIMENTAL, USE IT AT YOUR OWN RISK**
 
 This library was partly inspired from Grant Beaty's [Scunits](https://github.com/gbeaty/scunits), from which I 
 got some class names and the implementation for typelevel integers based on type-projections (though I enriched it 
