@@ -22,6 +22,8 @@ The following dependencies should be added to your build (see the double %% that
 maven-built artifacts from SBT-built artifacts).
 
     resolvers += Resolver.sonatypeRepo("snapshots")
+
+    libraryDependencies += "org.scalamacros" % "resetallattrs_2.11" % "1.0.0"
     
     libraryDependencies += "com.github.baccata" %% "yausl" % "0.1.0-SNAPSHOT"
 

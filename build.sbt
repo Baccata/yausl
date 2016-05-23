@@ -8,7 +8,7 @@ lazy val yausl = project.in(file("."))
   .settings(
     libraryDependencies ++= Seq(
       "com.chuusai" %% "shapeless" % "2.2.0-RC4",
-      "org.specs2" %% "specs2-core" % "3.6" % "test"
+      "org.specs2" %% "specs2-core" % "3.8" % "test"
     ))
   .settings(headers := Map("scala" -> Apache2_0("2015", "Olivier Mélois")))
 
@@ -51,7 +51,7 @@ lazy val macroProjectSettings = Seq(
   ),
   libraryDependencies ++= (
     if (scalaVersion.value.startsWith("2.10")) List(paradiseDependency)
-    else List("org.scalamacros" %% "resetallattrs" % "1.0.0-SNAPSHOT")
+    else List("org.scalamacros" %% "resetallattrs" % "1.0.0")
     )
 )
 
